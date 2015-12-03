@@ -1,0 +1,1274 @@
+\documentclass[11pt,oneside]{book}
+\parindent0pt
+\parskip0pt
+\usepackage[vmargin = 1in,hmargin = .5in]{geometry}
+\usepackage{amsmath,pifont}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage[backend=bibtex]{biblatex}
+\usepackage{booktabs}
+\usepackage{capt-of}
+\usepackage{color}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage[hidelinks,spanish]{hyperref}
+\usepackage{lastpage}
+\usepackage[latin1]{inputenc}
+\usepackage{lipsum}
+\usepackage{mathrsfs,marvosym}
+\usepackage{mdframed}
+\usepackage{multirow}
+
+\usepackage{ragged2e}
+\usepackage{setspace}
+\usepackage[spanish,es-nodecimaldot]{babel}
+\usepackage[some]{background}
+\usepackage{tikz}
+
+\pagestyle{fancy}
+\cfoot{\thepage\ de \pageref{LastPage}}
+\fancyhead[RE]{\textit{ \nouppercase{\leftmark}}}
+
+\definecolor{titlepagecolor}{cmyk}{1,.60,0,.40}
+\DeclareFixedFont{\bigsf}{T1}{phv}{b}{n}{1.5cm}
+\backgroundsetup{scale=1,angle=0,opacity=1,contents={\begin{tikzpicture}[remember
+picture, overlay]
+\path [fill=titlepagecolor] (-0.5\paperwidth,5) rectangle (0.5\paperwidth,10);
+\end{tikzpicture}}}
+
+\makeatletter
+
+\def\printauthor{%
+    {\large \@author}}
+\makeatother
+\author{%
+    \textbf{Juan Francisco Mu\~noz Elguez\'abal} \\
+    Alumno Ingenier\'ia Financiera \\
+    \textcolor{blue}{\texttt{IF149833@iteso.mx}} \vspace{40pt} }
+
+\begin{document}
+
+<<configuracion, eval=TRUE, echo=FALSE, include=FALSE, prompt=FALSE, warning=FALSE>>=
+Pkg <- c("base","downloader","data.table","fasttime","fBasics","forecast","grid",
+         "gridExtra","ggplot2","httr","h2o","jsonlite","lubridate","knitr","moments",
+         "plyr","quantmod","randomForest","reshape2","RCurl","stats","scales",
+         "tree","tseries","TTR","TSA","xts","xlsx","XLConnect","zoo")
+
+inst <- Pkg %in% installed.packages()
+if(length(Pkg[!inst]) > 0) install.packages(Pkg[!inst])
+instpackages <- lapply(Pkg, library, character.only=TRUE)
+
+options("scipen"=1000,"getSymbols.warning4.0"=FALSE)
+Sys.setlocale(category = "LC_ALL", locale = "")
+
+knit_hooks$set(inline = function(x) {
+if (is.numeric(x)) prettyNum(round(x,4), big.mark=",") else x = x})
+
+escala_gris  <- c("black","dark gray","gray","light gray")
+escala_rojo  <- c("dark red","red","light red")
+escala_azul  <- c("dark blue","blue","steel blue","light blue")
+
+setwd("~/Documents/IngenieriaFinanciera/PAPII/ReportePAPII/ReportePAPII")
+@
+
+\begin{titlepage}
+\BgThispage
+\newgeometry{left=2.5cm,right=2.5cm}
+\vspace*{2cm}
+\noindent
+\textcolor{white}{\Huge PAP II - Modelos de predici\'on en empresas y gobierno
+mediante aprendizaje estad\'istico.}
+\vspace{.5cm}
+\noindent
+\textcolor{white}{\Large }
+\vspace*{3.5cm}\par
+\noindent
+\begin{minipage}{0.45\linewidth}
+    \begin{flushright}
+        \printauthor
+    \end{flushright}
+\end{minipage} \hspace{9pt}
+%
+\begin{minipage}{0.04\linewidth}
+    \rule{1pt}{90pt}
+\end{minipage} \hspace{-9pt}
+%
+\begin{minipage}{0.5\linewidth}
+\vspace{4.25pt}
+
+{\justifying{
+Este proyecto integrador es desarrollado como documento del Proyecto de 
+Aplicaci\'on Profesional, actividad donde se incluye la realizaci\'on del servicio social
+y la opci\'on de titulaci\'on para programas de licenciatura en la universidad ITESO
+(Instituto Tecnol\'ogico y de Estudios Superiores de Occidente). Es realizado por un 
+alumno de la licenciatura Ingenier\'ia Financiera.
+}\par}
+   
+\end{minipage}
+\end{titlepage}
+\restoregeometry
+
+\tableofcontents
+
+\pagebreak
+% -- --------------------------------------------------------------------------------- --
+% -- --------------------------------------------------------------------------------- --
+\section*{Resumen} \label{sec:SecResumen} %	-- --------------------------------- --
+% -- --------------------------------------------------------------------------------- --
+% -- --------------------------------------------------------------------------------- --
+
+El sustento te\'orico para este Proyecto de Aplicaci\'on Profesional es en base a 
+programaci\'on estad\'istica y el \'area del conocimiento conocida como
+\textit{Machine Learning} o \textit{Aprendizaje Computacional}. Esto consiste en utilizar
+la estad\'istica y programaci\'on para construir modelos matem\'aticos, algunos de forma 
+cerrada (clasificados como anal\'iticos) y otros de forma abierta (clasificados como 
+computacionales o de m\'etodos iterativos num\'ericos). En este proyecto se abordaron 
+particularmente 4 que son: Support Vector Machines, Arboles de decisi\'on y variantes, Random
+Forest y Procesamiento de Lenguaje Natural. Como apoyo se utiliz\'o el sistema de control
+de versiones \textit{GIT}, y como plataforma de almacenamiento en la nube se recurri\'o a 
+\textit{GITHUB}, un sitio gratuito y ampliamente conocido por su interf\'az intuitiva e
+integraci\'on con \textit{Markdown}, un lenguaje de escritura cient\'itica y de contenido de
+estructura simple. Es importante destacar que el uso del sistema operativo \textit{Linux} y en
+concreto su distribuci\'on \textit{Ubuntu 14.04 lts} ayud\'o a simplificar el manejo de los
+lenguajes de programaci\'on y el repositorio creado en \textit{GITHUB}, as\'i como la 
+instalaci\'on de algunas paqueter\'ias de \textit{R}. Tambi\'en mencionar que los recursos
+f\'isicos computacionales se utilizaron a un nivel mejorado, en el sentido que para las
+operaciones demandantes de memoria o procesamiento se utiliz\'o una librer\'ia-\textit{API} 
+de conexi\'on remota a un cluster para programaci\'on en paralelo, \textit{H2O}. \\
+
+Adem\'as de las herramientas computacionales mencionadas anteriormente, se incluye la teor\'ia
+y an\'alisis de casos para 3 metodolog\'ias citadas, \textit{Boosted Trees} con aplicaci\'on
+al problema \textit{PonPare}, \textit{Random Forest} para resolver el problema de clasificaci\'on
+de variables en el problema de \textit{Rossman}, tambi\'en se presenta el caso de an\'alisis
+de texto en lenguaje natural y la metodolog\'ia \textit{Word2Vec}. De igual forma y a manera
+de trabajo libre se presenta la estrategia de trading o inversi\'on en el mercado \textit{FOREX}, en esta \'ultima es donde se gener\'o en su mayor\'ia el conocimiento aplicado de \textit{Machine Learning} en el \'area de finanzas burs\'atiles utilizando ingenier\'ia financiera. \\
+
+Finalmente se presentan los documentos y materiales anexos como el c\'odigo gen\'erico para
+la traducci\'on del japon\'es al espa\~nol necesario en el problema de \textit{Ponpare}, as\'i 
+como la bibliograf\'ia acad\'emica y sitios de inter\'es utilizados como referencia.
+
+
+\pagebreak
+% -- --------------------------------------------------------------------------------- --
+% -- --------------------------------------------------------------------------------- --
+\chapter{Introducci\'on} \label{sec:ChapIntro} %	-- --------------------------------- --
+% -- --------------------------------------------------------------------------------- --
+% -- --------------------------------------------------------------------------------- --
+
+Este trabajo representa la aplicaci\'on de los m\'etodos de aprendizaje computacional, 
+tambi\'en conocidos como \textit{Machine Learning} \\\\
+
+\hyperref[sec:SecIN1]{\autoref{sec:SecIN1}}~\textbf{\nameref{sec:SecIN1}} \\
+\hyperref[sec:SecIN2]{\autoref{sec:SecIN2}}~\textbf{\nameref{sec:SecIN2}} \\
+\hyperref[sec:SecIN3]{\autoref{sec:SecIN3}}~\textbf{\nameref{sec:SecIN3}} \\
+\hyperref[sec:SecIN4]{\autoref{sec:SecIN4}}~\textbf{\nameref{sec:SecIN4}}
+
+\pagebreak
+
+% -- --------------------------------------------------------------------------------- --
+\section{Objetivos}\label{sec:SecIN1}
+% -- --------------------------------------------------------------------------------- --
+
+\begin{itemize}
+  
+  \item \textbf{Principal:}
+  
+    Aplicar metodolog\'ias de machine learning a problemas de diversas industrias productivas
+    y de servicios, con la finalidad de construcci\'on de modelos para la clasificaci\'on y/o 
+    pron\'ostico de variables de particular importancia como las ventas, incumplimiento de
+    pagos a cr\'edito, etc.
+  
+  \item \textbf{Secundarios (de conocimiento):}
+  
+    \begin{itemize} 
+    
+      \item Utilizar metodolog\'ia \textit{Boosted trees}.
+      \item Utilizar metodolog\'ia \textit{Random Forest}.
+      \item Utilizar metodolog\'ia \textit{Natural Language Processing}.
+      
+    \end{itemize}
+    
+  \item \textbf{Secundarios (de herramientas):}
+  
+    \begin{itemize}
+    
+      \item Utilizar eficientemente R and Python Statistical Programming.
+      \item Desarrollar todo c\'odigo con Git Version Control.
+    
+    \end{itemize}
+
+\end{itemize}
+
+% -- --------------------------------------------------------------------------------- --
+\section{Justificaci\'on}\label{sec:SecIN2}
+% -- --------------------------------------------------------------------------------- --
+
+La ciencia de datos en la actualidad representa una herramienta de nueva generaci\'on.
+Tanto para los que buscan soluciones a problemas cotidianos mediante el uso y procesamiento
+adecuado de datos, como para los que buscan precisamente convertirse en cient\'ificos de
+datos. La programaci\'on estad\'istica es una herramienta que hace posible efectuar estudios
+y ser un profesionista en la ciencia de datos, para realizar programaci\'on estad\'istica
+ciertamente existe un gran n\'umero de herramientas disponibles, en part\'icular lenguajes
+de programaci\'on, en este PAP y documento mostramos el uso de \textit{R} y \textit{Python}.
+
+
+\vspace{.35cm}
+\hfill Regresar a: \textcolor{blue}{\autoref{sec:ChapIntro} (\nameref{sec:ChapIntro})}
+\pagebreak
+
+% -- --------------------------------------------------------------------------------- --
+\section{Antecedentes}\label{sec:SecIN3}
+% -- --------------------------------------------------------------------------------- --
+
+Los antecedentes en M\'exico de la ciencia de datos son difusos, a pesar de que si 
+ha existido desarrollo en sistemas computacionales y sobre todo aplicaciones en varias
+industrias, ciertamente la financiera a\'un no goza de estos beneficios. En occidente y
+particularmente en Jalisco s\'olamente se tienen matices de esta disciplina y definitivamente
+ha iniciado a permearse a distintas industrias y una de ellas comienza a ser la de
+servicios financieros. Generalmente los modelos de predicci\'on se realizaban con metodolog\'ias
+de car\'acter cerrado \'o \textit{de Soluci\'on Anal\'itica}, como lo son \textit{Box-Jenkins},
+o incluso la Teor\'ia Econ\'omica. 
+
+% -- --------------------------------------------------------------------------------- --
+\section{Contexto}\label{sec:SecIN4}
+% -- --------------------------------------------------------------------------------- --
+
+Particularmente en Jalisco se ha producido el ambiente id\'oneo para el crecimiento y mayor 
+uso de \textit{Machine Learning} para dar soluci\'on a problemas complejos de clasificaci\'on
+de informaci\'on, busqueda de patrones de comportamiento, predicci\'on y pron\'ostico de variables
+de distinta naturaleza. Con la carrera de Ingenier\'ia Financiera en el \textit{ITESO}, la licenciatura
+en Actuar\'ia y algunas ingenier\'ias en sistemas y licenciaturas en matem\'aticas con enf\'oque a finanzas y programaci\'on estad\'istica.
+
+\vspace{.35cm}
+\hfill Regresar a: \textcolor{blue}{\autoref{sec:ChapIntro} (\nameref{sec:ChapIntro})}
+\pagebreak
+
+% -- --------------------------------------------------------------------------------- --
+% -- ---------------------------------------------------------- Cargar Datos Generales --
+% -- --------------------------------------------------------------------------------- --
+
+<<DatosGenerales, eval=TRUE, echo=FALSE, include=FALSE>>=
+
+# -- Boosted Trees y PONPARE ----------------------------------------------------- --
+
+ChapBTTest  <- 0
+
+# -- Random Forest y ROSSMAN ----------------------------------------------------- -- 
+
+cat("Cargando datos para Random Forest - ROSSMAN \n")
+ChapRFtrain <- fread("ChapRF/train.csv",stringsAsFactors = T)
+ChapRFtest  <- fread("ChapRF/test.csv" ,stringsAsFactors = T)
+
+# -- Word 2 Vec y IMDB ----------------------------------------------------------- -- 
+
+ChapW2V <- 3
+ChapAT  <- 3
+@
+
+% -- --------------------------------------------------------------------------------- --
+% -- --------------------------------------------------------------------------------- --
+\chapter{Desarrollo} \label{sec:ChapDS} %	-- ----------------------------------------- --
+% -- --------------------------------------------------------------------------------- --
+% -- --------------------------------------------------------------------------------- --
+
+En este cap\'itulo... \\\\
+
+\hyperref[sec:SecDS1]{\autoref{sec:SecDS1}}~\textbf{\nameref{sec:SecDS1}} \\
+\hyperref[sec:SecDS2]{\autoref{sec:SecDS2}}~\textbf{\nameref{sec:SecDS2}} \\
+\hyperref[sec:SecDS3]{\autoref{sec:SecDS3}}~\textbf{\nameref{sec:SecDS3}} \\
+\hyperref[sec:SecDS4]{\autoref{sec:SecDS4}}~\textbf{\nameref{sec:SecDS4}}
+
+\pagebreak
+
+% -- --------------------------------------------------------------------------------- --
+\section{Sustento te\'orico y metodol\'ogico} \label{sec:SecDS1}
+% -- --------------------------------------------------------------------------------- --
+
+Se utiliza aprendizaje computacional o \textit{Machine Learning} como metodolog\'ia 
+para procesar datos y encontrar patrones de comportamiento. Hacer uso de recursos
+computacionales en esta \'epoca y desde la perspectiva de ingenier\'ia financiera es lo que
+hace caracter\'istico a este Proyecto de Aplicaci\'on Profesional. En concreto se utilizaron
+t\'ecnicas de aprendizaje supervisado. Todas de m\'etodos \textit{tradicionales} o los que
+\textbf{No} son \textit{heur\'isticos}. 
+
+% -- --------------------------------------------------------------------------------- --
+\section{Planeaci\'on y seguimiento} \label{sec:SecDS2}
+% -- --------------------------------------------------------------------------------- --
+
+Se inici\'o con el m\'etodo de \'arboles de decisi\'on para tener una metodolog\'ia b\'asica
+previa a las dem\'as, a pesar de que esta es ampliamente utilizada es tambi\'en considerada
+como la inicial y susceptible de mejoras y optimizaci\'on. Posteriormente se desarrolla e implementa
+el m\'etodo conocido como \textit{Boosted Trees} o \textit{\'arboles aumentados o estimulados}.
+
+% -- --------------------------------------------------------------------------------- --
+\section{Resultados} \label{sec:SecDS3}
+% -- --------------------------------------------------------------------------------- --
+
+\vspace{.35cm}
+\hfill Regresar a: \textcolor{blue}{\autoref{sec:ChapDS} (\nameref{sec:ChapDS})}
+\pagebreak
+
+% -- --------------------------------------------------------------------------------- --
+\section{Reflexiones de aprendizajes} \label{sec:SecDS4}
+% -- --------------------------------------------------------------------------------- --
+
+\subsection{Implicaciones \'eticas}
+
+\subsection{Aportaciones sociales}
+
+\vspace{.35cm}
+\hfill Regresar a: \textcolor{blue}{\autoref{sec:ChapDS} (\nameref{sec:ChapDS})}
+\pagebreak
+
+
+% -- --------------------------------------------------------------------------------- --
+% -- --------------------------------------------------------------------------------- --
+\chapter{Herramientas computacionales} \label{sec:ChapHC} %	-- --------------------- --
+% -- --------------------------------------------------------------------------------- --
+% -- --------------------------------------------------------------------------------- --
+
+En este cap\'itulo... \\\\
+
+\hyperref[sec:SecHC1]{\autoref{sec:SecHC1}}~\textbf{\nameref{sec:SecHC1}} \\
+\hyperref[sec:SecHC2]{\autoref{sec:SecHC2}}~\textbf{\nameref{sec:SecHC2}} \\
+\hyperref[sec:SecHC3]{\autoref{sec:SecHC3}}~\textbf{\nameref{sec:SecHC3}} \\
+\hyperref[sec:SecHC4]{\autoref{sec:SecHC4}}~\textbf{\nameref{sec:SecHC4}} \\
+\hyperref[sec:SecHC5]{\autoref{sec:SecHC5}}~\textbf{\nameref{sec:SecHC5}}
+
+\pagebreak
+
+% -- --------------------------------------------------------------------------------- --
+\section{Linux} \label{sec:SecHC1}
+% -- --------------------------------------------------------------------------------- --
+
+Linux es, en t\'erminos simples, un sistema operativo. Es el software en la computadora que
+permite a las aplicaciones y el usuario accesar a los dispositivos en la computadora para 
+llevar a cabo funciones o tareas deseadas. De tal manera que en estos t\'erminos linux es
+muy similar a otros sistemas operativos como Windows y OS X. La diferencia principal es que
+este sistema operativo es de c\'odigo abierto, gratuito y distribuido por y para la comunidad
+de usuarios. Sin embargo lo anterior no ha sido impedimento para la r\'apida adopci\'on de
+este sistema en lugares como el New York Stock Exchange y supercomputadoras privadas. Aunque sus
+inicios fueron mucho menos ambiciosos de lo que se podr\'ia suponer, y esque su origen se remonta a comienzo de la d\'ecada de los 90-s cuando Linus Torvalds, un estudiante de ciencias computacionales, inicio con su desarrollo a manera de \textit{hobby} el cual a finales de agosto de 1991 se convirti\'o en proyecto formal y public\'o en un blog a la comunidad desarrolladora que buscaba colaboradores. \\
+
+Para el 2008 el ecosistema Linux fue valuado en 25 billones de d\'olares americanos. Posiblemente
+debido a su portabilidad para operar bajo distintas plataformas y dispositivos electr\'onicos, su
+similaridad al sistema UNIX y que es software de licencia libre. Previo a lo cual se hab\'ian presentado eventualidades de mayor importancia para el desarrollo del sistema, un ejemplo fue lo ocurrido 
+en el 2000, a solo 9 a\~nos despu\'es de la primera distribuci\'on de Linux, IBM decide invertir 2,000
+millones de d\'olares en investigaci\'on y desarrollo del lenguaje, sin duda un evento significativo
+en la historia del sistema operativo de c\'odigo abierto. \\
+
+De igual manera que los sistemas operativos de Windows y OS X , Linux, y m\'as apropiadamente algunas distribuciones de este, incluyen GUIs, esto es Graphical User Interface o Interf\'az Gr\'afica de Usuario. Lo anterior significa que se puede tener a Linux como sistema operativo en una computadora y no tiene por qu\'e ser complicado de utilizar ya que, seg\'un la distribuci\'on, incluye tambi\'en elementos como ventanas, menus, ventanas de di\'alogo y elementos similares. La gran diferencia es
+que en Linux se tiene siempre la opci\'on de elegir el ambiente y hacerle incluso modificaciones mayores, personalizaciones. A diferencia de windows que no es posible y en OS X es muy dificil. \\
+
+En este trabajo se utiliz\'o una computadora con sistema operativo Linux para el procesamiento 
+de los datos, en particular la distribuci\'on de Ubuntu 14.04 lts, de manera que la mayor\'ia de las
+instrucciones al sistema fueron realizadas mediante comandos de texto ingresados desde la terminal. \\
+
+Algunas fuentes de informaci\'on:
+
+\begin{itemize}
+
+  \item Consorcio y fundaci\'on de LINUX:
+  \textcolor{blue}{\href{http://www.linuxfoundation.org/what-is-linux}{Linux Foundation}}
+
+  \item Blog de Linux Foundation:
+  \textcolor{blue}{\href{http://www.linux.com}{Linux.com}}
+  
+  \item LINUX en Universidades de prestigio:
+  \textcolor{blue}{\href{http://math.mit.edu/services/help/faq/linux}{LINUX en MIT}}
+  
+  \item LINUX en Universidades de prestigio:
+  \textcolor{blue}{\href{https://www.cmu.edu/computing/clusters/software/linux.html}{LINUX en Carnegie Mellon}}
+  
+  \item Soluciones de IBM en LINUX:
+  \textcolor{blue}{\href{http://www-03.ibm.com/linux/}{IBM-LINUX}}
+  
+  \item Gobiernos, Organizaciones Internacionales, Empresas usando LINUX:
+  \textcolor{blue}{\href{http://www.comparebusinessproducts.com/fyi/50-places-linux-running-you-might-not-expect}{Compare Business Products}}
+  
+\end{itemize}
+
+\vspace{.35cm}
+\hfill Regresar a: \textcolor{blue}{\autoref{sec:ChapHC} (\nameref{sec:ChapHC})}
+\pagebreak
+
+
+% -- --------------------------------------------------------------------------------- --
+\section{Sistema de control de versiones Git} \label{sec:SecHC2}
+% -- --------------------------------------------------------------------------------- --
+
+Git es un sistema de control de versiones, un conjunto de instrucciones almacenadas en un
+c\'odigo ligero que se instala en las computadoras. Es gratuito, de distribuci\'on libre, de
+c\'odigo abierto y ampliamente utilizado en el ambiente de desarrollo computacional, incluidas
+las \'areas como finanzas computacionales y aprendizaje computacional. Este sistema est\'a designado
+para ordenar, controlar y almacenar todas y cada una de las versiones de un proyecto computacional.
+Es decir, es un hist\'orico de modificaciones realizadas a uno, varios o todos los archivos contenidos
+en la carpeta designada. Haciendo este control de versiones utilizando muy poca memoria, el sistema
+Git provee de una herramienta para controlar cambios, respaldos, y talvez la mejor de las funciones
+que hace posible es el c\'odigo colaborativo. Mediante el uso de Git puede un grupo de desarrolladores
+estar trabajando en el mismo proyecto, en locaciones f\'isicas distintas ya que es compatible con
+internet, controlando todos y cada uno de los cambios realizados por los integrantes del equipo. \\\\
+
+En este proyecto se ha utilizado la plataforma \textcolor{blue}{\href{http://www.github.com}{GitHub}}
+
+\vspace{.35cm}
+\hfill Regresar a: \textcolor{blue}{\autoref{sec:ChapHC} (\nameref{sec:ChapHC})}
+\pagebreak
+
+
+% -- --------------------------------------------------------------------------------- --
+\section{Programaci\'on estad\'istica en R} \label{sec:SecHC3}
+% -- --------------------------------------------------------------------------------- --
+
+
+\vspace{.35cm}
+\hfill Regresar a: \textcolor{blue}{\autoref{sec:ChapHC} (\nameref{sec:ChapHC})}
+\pagebreak
+
+
+% -- --------------------------------------------------------------------------------- --
+\section{Programaci\'on estad\'istica en Python} \label{sec:SecHC4}
+% -- --------------------------------------------------------------------------------- --
+
+\vspace{.35cm}
+\hfill Regresar a: \textcolor{blue}{\autoref{sec:ChapHC} (\nameref{sec:ChapHC})}
+\pagebreak
+
+% -- --------------------------------------------------------------------------------- --
+\section{Computo en Paralelo} \label{sec:SecHC5}
+% -- --------------------------------------------------------------------------------- --
+
+
+\vspace{.35cm}
+\hfill Regresar a: \textcolor{blue}{\autoref{sec:ChapHC} (\nameref{sec:ChapHC})}
+\pagebreak
+
+
+% -- --------------------------------------------------------------------------------- --
+% -- --------------------------------------------------------------------------------- --
+\chapter{Boosted Trees - Ponpare} \label{sec:ChapBT}
+% -- --------------------------------------------------------------------------------- --
+% -- --------------------------------------------------------------------------------- --
+
+En este cap\'itulo... \\\\
+
+\hyperref[sec:SecBT1]{\autoref{sec:SecBT1}}~\textbf{\nameref{sec:SecBT1}} \\
+\hyperref[sec:SecBT2]{\autoref{sec:SecBT2}}~\textbf{\nameref{sec:SecBT2}} \\
+\hyperref[sec:SecBT3]{\autoref{sec:SecBT3}}~\textbf{\nameref{sec:SecBT3}} \\
+\hyperref[sec:SecBT4]{\autoref{sec:SecBT4}}~\textbf{\nameref{sec:SecBT4}}
+
+\pagebreak
+
+% -- --------------------------------------------------------------------------------- --
+\section{Descripci\'on del problema} \label{sec:SecBT1}
+% -- --------------------------------------------------------------------------------- --
+
+\textit{Predecir cuales cupones el cliente comprar\'a}. 
+
+\vspace{.35cm}
+\hfill Regresar a: \textcolor{blue}{\autoref{sec:ChapBT} (\nameref{sec:ChapBT})}
+\pagebreak
+
+% -- --------------------------------------------------------------------------------- --
+\section{Exploraci\'on los datos} \label{sec:SecBT2}
+% -- --------------------------------------------------------------------------------- --
+
+\subsection{Descripci\'on de archivos}
+
+Los archivos que se utilizan para este proyecto son los siguientes:
+
+\begin{itemize}
+  
+  \item \textbf{user\_list.csv}
+
+{
+\centering
+\begin{tabular} {p{.5cm} p{5cm} p{1cm}}
+    
+    &
+    \vspace{5pt}
+    Lista principal de usuarios y caracter\'isticas de los mismos.
+    & 
+    \vspace{0pt}
+    \begin{figure}[H]
+    \includegraphics[scale=.5]{Imagenes/Archivo1.png}
+    \end{figure}
+    
+\end{tabular}
+}
+
+  \item \textbf{coupon\_list\_train.csv}
+  
+{
+\centering
+\begin{tabular} {p{.5cm} p{5cm} p{1cm}}
+    
+    &
+    \vspace{5pt}
+    Lista principal de cupones que son considerados parte del dataset de entrenamiento
+    & 
+    \vspace{0pt}
+    \begin{figure}[H]
+    \includegraphics[scale=.5]{Imagenes/Archivo2.png}
+    \end{figure}
+    
+\end{tabular}
+}
+
+  \item \textbf{coupon\_list\_test.csv}
+
+{
+\centering
+\begin{tabular} {p{.5cm} p{5cm} p{1cm}}
+    
+    &
+    \vspace{5pt}
+Lista principal de cupones que son considerados parte del dataset de prueba. La 
+predicci\'on realizada para la competencia debera de ser efectuada s\'olamente
+con informaci\'on de \'estos 310 cupones. No recibir\'a ning\'un cr\'edito por 
+predecir cupones comprados del dataset de entrenamiento que fueron comprados
+durante el periodo de prueba.
+    & 
+    \vspace{0pt}
+    \begin{figure}[H]
+    \includegraphics[scale=.5]{Imagenes/Archivo3.png}
+    \end{figure}
+    
+\end{tabular}
+}
+
+\pagebreak
+
+  \item \textbf{coupon\_visit\_train.csv}
+
+{
+\centering
+\begin{tabular} {p{.5cm} p{5cm} p{1cm}}
+    
+    &
+    \vspace{5pt}
+El registro de visualizaci\'on de los usuarios al buscar cupones durante el periodo
+de tiempo del dataset de entrenamiento. Esta tabla no es provista para el periodo
+de prueba.
+    & 
+    \vspace{0pt}
+    \begin{figure}[H]
+    \includegraphics[scale=.5]{Imagenes/Archivo4.png}
+    \end{figure}
+    
+\end{tabular}
+}
+
+  \item \textbf{coupon\_detail\_train.csv}
+  
+  {
+\centering
+\begin{tabular} {p{.5cm} p{5cm} p{1cm}}
+    
+    &
+    \vspace{5pt}
+Visualizaci\'on del registro de los usuarios que compraron cupones durante el periodo
+de entrenamiento. Esto no es provisto para el periodo de prueba.
+    & 
+    \vspace{0pt}
+    \begin{figure}[H]
+    \includegraphics[scale=.5]{Imagenes/Archivo5.png}
+    \end{figure}
+    
+\end{tabular}
+}
+
+\end{itemize}
+
+\textbf{NOTA:} \\
+Debido a la naturaleza de la fuente de datos, se observ\'o que muchos de
+estos est\'an en otro idioma, japon\'es, por lo que ha sido necesario un procedimiento
+de traducci\'on previo a iniciar con la exploraci\'on estad\'istica. Este procedimiento
+se incluye en ANEXOS al final del documento. \\
+
+\textbf{Convertir caracteres a fechas:} \\
+Para un manejo \'optimo de las funcionalidades de los paquetes \textit{lubridate,stats},
+las fechas que est\'an en form\'ato leible por humano \textit{aaaa-mm-dd"} deben de estar
+intr\'insecamente en un form\'ato tambi\'en leible por la m\'aquina, en este caso usaremos
+el form\'ato \textit{POSIXct} el cual es el n\'umero de segundos transcurridos desde el
+momento \textit{inicial} propuesto por \'este est\'andar que es la fecha y hora: 
+\textit{1970-01-01 00:00:00}.
+
+\pagebreak
+\subsection{Cargar Datos}
+
+Se utiliza la funci\'on \textit{fread}, del paquete \textit{data.table}, similar
+a la funci\'on \textit{read.table} y \textit{read.csv} del paquete \textit{utils}, sin
+embargo es m\'as r\'apida y convenientemente utiliza la misma clase de datos de entrada
+y arroja el resultado con el mismo form\'ato. Se llev\'o a cabo una prueba, donde un archivo
+de 2,833,180 renglones y 8 columnas cada uno, se carg\'o 11 veces m\'as r\'apido con
+la funci\'on de \textit{fread} que con la funci\'on \textit{read.csv}. el siguiente c\'odigo
+muestra este proceso.
+
+<<Fechas, eval = FALSE, echo = TRUE, include = TRUE, results='hide'>>=
+cat("Cargando datos para Boosted Trees - PONPARE \n")
+
+PonPare1 <- fread("ChapBT/coupon_area_train.csv",stringsAsFactors = T)
+PonPare2 <- fread("ChapBT/coupon_detail_train.csv",stringsAsFactors = T)
+PonPare3 <- fread("ChapBT/coupon_list_train.csv",stringsAsFactors = T)
+
+Inicial1 <- as.numeric(Sys.time())
+PonPare4 <- fread("ChapBT/coupon_visit_train.csv",stringsAsFactors = T)
+Final1 <- as.numeric(Sys.time())
+
+Inicial2 <- as.numeric(Sys.time())
+PonPare5 <- read.csv("ChapBT/coupon_visit_train.csv",stringsAsFactors = T)
+Final2 <- as.numeric(Sys.time())
+
+cat("fread se tarda, en segundos:")
+Final1-Inicial1
+
+cat("read.csv se tarda, en segundos:")
+Final2-Inicial2
+@
+
+Lo que arroja como resultado lo siguiente:
+
+\begin{figure}[H]
+\centering
+\includegraphics[scale=.5]{Imagenes/freadVSreadcsv.png}
+\end{figure}
+
+Lo siguiente fue unir la informaci\'on de dos data sets en uno solo. a trav\'es de la 
+funci\'on \textit{merge}. Tambi\'en se utiliz\'o la funci\'on \textit{fastPOSIXct} del
+paquete \textit{fasttime} que aminor\'o de igual manera el tiempo necesario para tratar
+esta cantidad de datos.
+
+<<Fechas1, eval = FALSE, echo = TRUE, include = TRUE, results='hide'>>=
+colnames(Ponpare4)[5] <- "COUPON_ID_hash"
+ChapBTTrain <- merge(Ponpare3,Ponpare4, by ="COUPON_ID_hash")
+ChapBTTrain$I_DATE <- fastPOSIXct(ChapBTTrain$I_DATE)
+@
+
+\vspace{.35cm}
+\hfill Regresar a: \textcolor{blue}{\autoref{sec:ChapBT} (\nameref{sec:ChapBT})}
+\pagebreak
+
+\pagebreak
+% -- --------------------------------------------------------------------------------- --
+\section{Desarrollo Te\'orico de modelo} \label{sec:SecBT3}
+% -- --------------------------------------------------------------------------------- --
+
+\vspace{.35cm}
+\hfill Regresar a: \textcolor{blue}{\autoref{sec:ChapBT} (\nameref{sec:ChapBT})}
+\pagebreak
+
+% -- --------------------------------------------------------------------------------- --
+\section{Exploraci\'on de modelo} \label{sec:SecBT4}
+% -- --------------------------------------------------------------------------------- --
+
+\begin{itemize}
+
+\item \textbf{D\'ia de la semana en la que se realiz\'o la visita.}
+
+<<Exp, eval = FALSE, echo = TRUE, include = TRUE, results='hide'>>=
+VISIT_WDAY  <- wday(ChapBTTrain$I_DATE)
+@
+
+\item \textbf{Visitas en cupones por mes de a\~no:}
+
+<<Exp1, eval = FALSE, echo = TRUE, include = TRUE, results='hide'>>=
+CouponVisitTrain$VISIT_MONTH <- month(ChapBTTrain$I_DATE)
+@
+
+
+\item \textbf{Visitas en cupones por g\'enero:}
+
+<<Exp2, eval = FALSE, echo = TRUE, include = TRUE, results='hide'>>=
+VISIT_GENDER <- data.frame(length(which(Ponpare4$SEX_ID == "f")),
+                           length(which(Ponpare4$SEX_ID == "m")))
+colnames(VISIT_GENDER) <- c("f","m")
+@
+
+\item \textbf{Visitas en cupones por edad:}
+
+<<Exp3, eval = FALSE, echo = TRUE, include = TRUE, results='hide'>>=
+VISIT_AGE <- unique(Ponpare4$AGE[match(ChapBTTrain$USER_ID_hash,
+                                       Ponpare4$USER_ID_hash)])
+@
+
+\item \textbf{A\~no de registro de usuario:}
+
+<<Exp5, eval = FALSE, echo = TRUE, include = TRUE, results='hide'>>=
+REG_YEAR <- count(year(Ponpare4$REG_DATE[match(ChapBTTrain$USER_ID_hash,
+                                               Ponpare4$USER_ID_hash)]))
+@
+
+\end{itemize}
+
+
+\vspace{.35cm}
+\hfill Regresar a: \textcolor{blue}{\autoref{sec:ChapBT} (\nameref{sec:ChapBT})}
+\pagebreak
+
+% -- --------------------------------------------------------------------------------- --
+% -- --------------------------------------------------------------------------------- --
+\chapter{Random Forest - Rossman} \label{sec:ChapRF}
+% -- --------------------------------------------------------------------------------- --
+% -- --------------------------------------------------------------------------------- --
+
+En este cap\'itulo... \\\\
+
+\hyperref[sec:SecRF1]{\autoref{sec:SecRF1}}~\textbf{\nameref{sec:SecRF1}} \\
+\hyperref[sec:SecRF2]{\autoref{sec:SecRF2}}~\textbf{\nameref{sec:SecRF2}} \\
+\hyperref[sec:SecRF3]{\autoref{sec:SecRF3}}~\textbf{\nameref{sec:SecRF3}} \\
+\hyperref[sec:SecRF4]{\autoref{sec:SecRF4}}~\textbf{\nameref{sec:SecRF4}}
+
+\pagebreak
+
+% -- --------------------------------------------------------------------------------- --
+\section{Descripci\'on del problema} \label{sec:SecRF1}
+% -- --------------------------------------------------------------------------------- --
+
+\textbf{Objetivo:} Prononsticar las ventas de 1115 farmacias de la cadena Rossman localizadas por todo Alemania. Utilizando informaci\'on y datos provenientes de puntos de venta, promociones y datos de competidores. \\
+
+Rossmann opera m\'as de 3.000 farmacias en 7 pa\'ises europeos. Los Gerentes de
+las tiendas Rossmann tienen la tarea de predecir sus ventas diarias para las pr\'oximas
+seis semanas de operaci\'on. Naturalmente se puede pensar que las ventas en tienda son
+influenciadas por muchos factores, incluyendo las promociones, la competencia, la
+din\'amica social como periodos escolares, los d\'ias festivos estatales e incluso las
+estaciones del a\~no.
+
+\vspace{.35cm}
+\hfill Regresar a: \textcolor{blue}{\autoref{sec:ChapRF} (\nameref{sec:ChapRF})}
+\pagebreak
+
+% -- --------------------------------------------------------------------------------- --
+\section{Exploraci\'on los datos} \label{sec:SecRF2}
+% -- --------------------------------------------------------------------------------- --
+
+\subsection{B\'asica inicial}
+
+<<ROSSMAN1, eval=TRUE, echo=FALSE, include=FALSE>>=
+ChapRFstore <- fread("ChapRF/store.csv",stringsAsFactors = T)
+ChapRFtrain <- ChapRFtrain[Sales > 0,]
+ChapRFtest  <- merge(ChapRFtest,ChapRFstore,by="Store")
+
+ChapRF1a <- max(ChapRFtrain$Store)  # Numero de tiendas
+ChapRF1b <- first(ChapRFtrain$Date) # Fecha Final
+ChapRF1c <- last(ChapRFtrain$Date)  # Fecha Inicial
+
+# El mayor numero de ventas registradas en una tienda 
+ChapRF1d <- max(ChapRFtrain$Sales)
+
+# Tienda que mas ha vendido
+ChapRF1e <- ChapRFtrain$Store[which(ChapRFtrain$Sales == max(ChapRFtrain$Sales))]
+
+# El menor numero de ventas registradas en una tienda 
+ChapRF1f <- min(ChapRFtrain$Sales)
+
+ # Tienda que menos ha vendido
+ChapRF1g <- ChapRFtrain$Store[which(ChapRFtrain$Sales == min(ChapRFtrain$Sales))]
+
+# El mayor numero de clientes registradas en una tienda 
+ChapRF1h <- max(ChapRFtrain$Customers)
+
+# Tienda con mas clientes
+ChapRF1i <- ChapRFtrain$Store[which(ChapRFtrain$Customers == 
+            max(ChapRFtrain$Customers))]
+
+# El menor numero de clientes registradas en una tienda 
+ChapRF1j <- min(ChapRFtrain$Customers)
+
+# Tienda con menos clientes
+ChapRF1k <- ChapRFtrain$Store[which(ChapRFtrain$Customers == 
+            min(ChapRFtrain$Customers))]
+@
+
+En los datos de \textit{Entrenamiento} se tiene un n\'umero de tiendas de 
+\textit{\Sexpr{ChapRF1a}} de las cuales se recabaron datos desde el 
+\textit{\Sexpr{ChapRF1c}} al \textit{\Sexpr{ChapRF1b}}. As\'i
+mismo al realizar la exploraci\'on se ha encontrado que el mayor n\'umero de ventas
+registradas en una tienda fue de \textit{\Sexpr{ChapRF1d}}, esto en la tienda con 
+ID: \textit{\Sexpr{ChapRF1e}}. Por el contrario, la tienda que menos ventas 
+registr\'o fue la correspondiente al ID: \textit{\Sexpr{ChapRF1g}} debido a que se
+registran s\'olo \textit{\Sexpr{ChapRF1f}}.
+
+\subsection{Ajuste de datos}
+
+La informaci\'on de fechas en las columnas \textit{Date} y \textit{Store} se encuentran
+almacenadas como un objeto tipo \textit{Factor}, el siguiente codigo es para convertirlas
+a individuales, tanto para el conjunto de entrenamiento, \textit{train}, como para 
+el de prueba \textit{test}. Tambi\'en se hace una transformaci\'on logar\'itmica a la
+cifra de ventas, con la finalidad de reducir el efecto de los datos at\'ipicos que de
+manera no formal se encontraron en la exploraci\'on inicial.
+
+<<ROSSMAN2, eval=TRUE, echo=TRUE, include=TRUE, results.hide='TRUE'>>=
+ChapRFtrain[,Date:= as.Date(Date)]
+ChapRFtest[ ,Date:= as.Date(Date)]
+
+ChapRFtrain[,month:= as.integer(format(Date, "%m"))]
+ChapRFtrain[,year:=  as.integer(format(Date, "%y"))]
+ChapRFtrain[,Store:= as.factor(as.numeric(Store))]
+
+ChapRFtest[,month:= as.integer(format(Date, "%m"))]
+ChapRFtest[,year:=  as.integer(format(Date, "%y"))]
+ChapRFtest[,Store:= as.factor(as.numeric(Store))]
+
+ChapRFtrain[,logSales:=log1p(Sales)]
+@
+
+\subsection{Uso de libreria H2O}
+
+Transcripci\'on de documentaci\'on oficial: \textit{R scripting functionality
+for H2O, the open source math engine for big data that computes parallel
+distributed machine learning algorithms such as generalized linear models,
+gradient boosting machines, random forests, and neural networks (deep learning)
+within various cluster environments} \\
+
+Lo que significa que se utilizar\'a para efectuar \textit{Parallel Distributed Machine
+Learning Algorithms} o Algoritmos de Aprendizaje Computacional y Distribuci\'on Paralela.
+
+\subsection{Inicializar Cluster}
+
+<<ROSSMAN3, eval=FALSE, echo=TRUE, include=TRUE, results.hide='TRUE'>>=
+h2o.init(nthreads=-1, max_mem_size='6G')
+trainHex <- as.h2o(ChapRFtrain)
+@
+
+\pagebreak
+\subsection{Establecer variables y entrenar modelo}
+
+<<ROSSMAN4, eval=FALSE, echo=TRUE, include=TRUE, results.hide='TRUE'>>=
+features <- colnames(ChapRFtrain)[!(colnames(ChapRFtrain) 
+%in% c("Id","Date","Sales","logSales","Customers"))]
+
+rfHex <- h2o.randomForest(x=features,y="logSales",ntrees=100,max_depth=30,
+nbins_cats = 1115,training_frame=trainHex)
+summary(rfHex)
+@
+
+\subsection{Datos de prueba}
+
+<<ROSSMAN5, eval=FALSE, echo=TRUE, include=TRUE, results.hide='TRUE'>>=
+testHex <- as.h2o(ChapRFtest)
+predictions <- as.data.frame(h2o.predict(rfHex,testHex))
+pred <- expm1(predictions[,1])
+summary(pred)
+@
+
+
+\vspace{.35cm}
+\hfill Regresar a: \textcolor{blue}{\autoref{sec:ChapRF} (\nameref{sec:ChapRF})}
+\pagebreak
+
+% -- --------------------------------------------------------------------------------- --
+\section{Desarrollo Te\'orico de modelo} \label{sec:SecRF3}
+% -- --------------------------------------------------------------------------------- --
+
+\vspace{.35cm}
+\hfill Regresar a: \textcolor{blue}{\autoref{sec:ChapRF} (\nameref{sec:ChapRF})}
+\pagebreak
+
+% -- --------------------------------------------------------------------------------- --
+\section{Desempe\~no de modelo} \label{sec:SecRF4}
+% -- --------------------------------------------------------------------------------- --
+
+\vspace{.35cm}
+\hfill Regresar a: \textcolor{blue}{\autoref{sec:ChapRF} (\nameref{sec:ChapRF})}
+\pagebreak
+
+
+% -- --------------------------------------------------------------------------------- --
+% -- --------------------------------------------------------------------------------- --
+\chapter{Natural Language Processing - Word2Vec} \label{sec:ChapW2V}
+% -- --------------------------------------------------------------------------------- --
+% -- --------------------------------------------------------------------------------- --
+
+En este cap\'itulo... \\\\
+
+\hyperref[sec:SecW2V1]{\autoref{sec:SecW2V1}}~\textbf{\nameref{sec:SecW2V1}} \\
+\hyperref[sec:SecW2V2]{\autoref{sec:SecW2V2}}~\textbf{\nameref{sec:SecW2V2}} \\
+\hyperref[sec:SecW2V3]{\autoref{sec:SecW2V3}}~\textbf{\nameref{sec:SecW2V3}} \\
+\hyperref[sec:SecW2V4]{\autoref{sec:SecW2V4}}~\textbf{\nameref{sec:SecW2V4}}
+
+\pagebreak
+
+% -- --------------------------------------------------------------------------------- --
+\section{Descripci\'on del problema} \label{sec:SecW2V1}
+% -- --------------------------------------------------------------------------------- --
+
+\vspace{.35cm}
+\hfill Regresar a: \textcolor{blue}{\autoref{sec:ChapW2V} \nameref{sec:ChapW2V}}
+\pagebreak
+
+% -- --------------------------------------------------------------------------------- --
+\section{Exploraci\'on los datos} \label{sec:SecW2V2}
+% -- --------------------------------------------------------------------------------- --
+
+\begin{itemize}
+
+  \item Cuenta en Twitter.
+  
+<<NLP1, eval=FALSE, echo=TRUE, include=TRUE, results.hide='TRUE'>>=
+username = '@iffranciscome'
+@
+  
+  \item Registro de APP.
+  
+<<NLP2, eval=FALSE, echo=TRUE, include=TRUE, results.hide='TRUE'>>=
+https://bitbucket.org/quant-ai/twittermining
+@
+  
+  \item Generar llaves.
+  
+<<NLP3, eval=FALSE, echo=TRUE, include=TRUE, results.hide='TRUE'>>=
+consumer_key    = '4TJeb1mqGw22VmxWd8w7gf3Tk'
+consumer_secret = 'uvwY6vtdfxzbsbUOS14sHQMfZgKX0cRyAi7041XbdEkZWVKXhc'
+access_token    = '3288299311-sk9rkLFG0bXoeZbVbV4mJN7lmLCuUqweMhkO7BV'
+access_token_secret = 'FhGj0ab2j7b7UN5LLjgeZ3ZBeTyCrkt0T6dGe6IeYAoVj'
+@
+
+\end{itemize}
+
+\pagebreak
+\subsection*{Cargar Librer\'ias}
+
+<<NLP4, eval=FALSE, echo=TRUE, include=TRUE, results.hide='TRUE'>>=
+import tweepy as tp # API para Twitter https://github.com/tweepy/tweepy
+import numpy  as np #
+import pandas as pd # Manejo de datos
+import json   as js # Manejo de datos tipo JSON
+import nltk
+import re
+
+from nltk.tokenize import word_tokenize   # Importar funcion tokenizar.
+from nltk.corpus import stopwords         # Importar lista "stop word".
+from bs4 import BeautifulSoup             # Extraer datos de archivos HTML y XML.
+from sklearn.feature_extraction.text import CountVectorizer
+@
+
+\subsection*{Autentificacion y Usuarios}
+
+<<NLP5, eval=FALSE, echo=TRUE, include=TRUE, results.hide='TRUE'>>=
+auth = tp.OAuthHandler(consumer_key, consumer_secret)
+auth.set_access_token(access_token, access_token_secret)
+api  = tp.API(auth)
+
+Periodicos = {'Nombre' : ['Wall Street Journal','Bloomberg Markets','CNBC'],
+              'Cuenta' : ['@WSJmarkets','@markets','@CNBC']}
+
+Profesion  = {'Nombre' : ['Guillermo Barba','Jim Cramer','Tom Keene'],
+              'Cuenta' : ['@memobarba','@jimcramer','@tomkeene']}
+
+Bolsas     = {'Nombre' : ['Dow Jones','BMV','CME Group'],
+              'Cuenta' : ['@DowJones','@GrupoBMV','@CMEGroup']}
+
+DFPer = pd.DataFrame(Periodicos)
+DFPro = pd.DataFrame(Profesion)
+DFBol = pd.DataFrame(Bolsas)
+@
+
+\pagebreak
+\subsection*{Peticiones de informaci\'on}
+
+<<NLP6, eval=FALSE, echo=TRUE, include=TRUE, results.hide='TRUE'>>=
+DFPer['Seguidores'] = 0
+DFPer['Seguidores'][0] = len(api.followers_ids(DFPer['Cuenta'][0]))
+DFPer['Seguidores'][1] = len(api.followers_ids(DFPer['Cuenta'][1]))
+DFPer['Seguidores'][2] = len(api.followers_ids(DFPer['Cuenta'][2]))
+
+DFPro['Seguidores'] = 0
+DFPro['Seguidores'][0] = len(api.followers_ids(DFPro['Cuenta'][0]))
+DFPro['Seguidores'][1] = len(api.followers_ids(DFPro['Cuenta'][1]))
+DFPro['Seguidores'][2] = len(api.followers_ids(DFPro['Cuenta'][2]))
+
+DFBol['Seguidores'] = 0
+DFBol['Seguidores'][0] = len(api.followers_ids(DFBol['Cuenta'][0]))
+DFBol['Seguidores'][1] = len(api.followers_ids(DFBol['Cuenta'][1]))
+DFBol['Seguidores'][2] = len(api.followers_ids(DFBol['Cuenta'][2]))
+
+guarda = api.user_timeline(DFPer['Cuenta'][0])[1].created_at
+
+Tweets0 =  [t.text for t in api.user_timeline(DFPer['Cuenta'][0])]
+Tweets1 =  [t.text for t in api.user_timeline(DFPer['Cuenta'][1])]
+Tweets2 =  [t.text for t in api.user_timeline(DFPer['Cuenta'][2])]
+
+Tweets3 =  [t.text for t in api.user_timeline(DFPro['Cuenta'][0])]
+Tweets4 =  [t.text for t in api.user_timeline(DFPro['Cuenta'][1])]
+Tweets5 =  [t.text for t in api.user_timeline(DFPro['Cuenta'][2])]
+
+Tweets6 =  [t.text for t in api.user_timeline(DFBol['Cuenta'][0])]
+Tweets7 =  [t.text for t in api.user_timeline(DFBol['Cuenta'][1])]
+Tweets8 =  [t.text for t in api.user_timeline(DFBol['Cuenta'][2])]
+@
+
+\subsection*{Construcci\'on de vocabulario}
+
+<<NLP7, eval=FALSE, echo=TRUE, include=TRUE, results.hide='TRUE'>>=
+review_text = BeautifulSoup(Tweets0[1]).get_text()
+letters_only = re.sub("[^a-zA-Z]", " ", review_text)
+words = letters_only.lower().split()
+stops = set(stopwords.words("english"))
+meaningful_words = [w for w in words if not w in stops]
+@
+
+\vspace{.35cm}
+\hfill Regresar a: \textcolor{blue}{\autoref{sec:ChapW2V} \nameref{sec:ChapW2V}}
+\pagebreak
+
+% -- --------------------------------------------------------------------------------- --
+\section{Desarrollo Te\'orico de modelo} \label{sec:SecW2V3}
+% -- --------------------------------------------------------------------------------- --
+
+\vspace{.35cm}
+\hfill Regresar a: \textcolor{blue}{\autoref{sec:ChapW2V} \nameref{sec:ChapW2V}}
+\pagebreak
+
+% -- --------------------------------------------------------------------------------- --
+\section{Desempe\~no de modelo} \label{sec:SecW2V4}
+% -- --------------------------------------------------------------------------------- --
+
+\vspace{.35cm}
+\hfill Regresar a: \textcolor{blue}{\autoref{sec:ChapW2V} \nameref{sec:ChapW2V}}
+\pagebreak
+
+
+% -- --------------------------------------------------------------------------------- --
+% -- --------------------------------------------------------------------------------- --
+\chapter{Algorithmic Trading - Oanda} \label{sec:ChapAT}
+% -- --------------------------------------------------------------------------------- --
+% -- --------------------------------------------------------------------------------- --
+
+En este cap\'itulo contiene el trabajo sobre el m\'etodo de \textit{Random Forest} aplicado
+a datos independientes, en este caso para encontrar la significancia de distintas se\~nales
+para explicar el signo del rendimiento del precio para un activo financiero. \\\\
+
+\hyperref[sec:SecAT1]{\autoref{sec:SecAT1}}~\textbf{\nameref{sec:SecAT1}} \\
+\hyperref[sec:SecAT2]{\autoref{sec:SecAT2}}~\textbf{\nameref{sec:SecAT2}} \\
+\hyperref[sec:SecAT3]{\autoref{sec:SecAT3}}~\textbf{\nameref{sec:SecAT3}} \\
+\hyperref[sec:SecAT4]{\autoref{sec:SecAT4}}~\textbf{\nameref{sec:SecAT4}}
+
+\pagebreak
+
+% -- --------------------------------------------------------------------------------- --
+\section{Descripci\'on del problema} \label{sec:SecAT1}
+% -- --------------------------------------------------------------------------------- --
+
+Las series de tiempo financieras generalmente consisten en una serie de observaciones 
+del precio o valor de un activo financiero realizadas en distintos puntos del tiempo. cuyas
+principales caracter\'isticas cualitativas es que los intervalos de tiempo transcurrido
+entre una observaci\'on y otra son del mismo tama\~no. Ademas que para un mismo punto de
+tiempo no pueden existir 2 precios. M\'as a detalle, el hecho de que estas series al
+estar ordenadas en base a una variable, el tiempo en este caso, conlleva a que se presenten
+generalmente autocorrelaciones seriales y efectos parecidos. Si se hiciese un modelo
+que aborde estos fen\'omenos conduciendo pruebas estad\'isticas formales, ser\'ia un modelo
+de variables end\'ogenas. En caso contrario, si se propone utilizar series de tiempo y 
+otras variables externas al fen\'omeno del precio como tal, el modelo se considera como 
+de variables ex\'ogenas. En este trabajo se utiliza el \textit{Machine Learning} para
+encontrar,a partir de una serie de variables ex\'ogenas y end\'ogenas son \'utiles para
+realizar un pron\'ostico del precio y/o rendimiento.
+
+
+\vspace{.35cm}
+\hfill Regresar a: \textcolor{blue}{\autoref{sec:ChapAT} \nameref{sec:ChapAT}}
+\pagebreak
+
+% -- --------------------------------------------------------------------------------- --
+\section{Exploraci\'on los datos} \label{sec:SecAT2}
+% -- --------------------------------------------------------------------------------- --
+
+\subsection*{Correr c\'odigos de GitHub Virtualmente}
+
+<<Trading1, eval=FALSE, echo=TRUE, include=TRUE, results.hide='TRUE'>>=
+ROandaAPI <- "https://raw.githubusercontent.com/IFFranciscoME/ROandaAPI/master/ROandaAPI.R"
+downloader::source_url(ROandaAPI,prompt=FALSE,quiet=TRUE)
+PRC <- "https://raw.githubusercontent.com/IFFranciscoME/DataProcessor/master/DataProcessor.R"
+downloader::source_url(PRC,prompt=FALSE,quiet=TRUE)
+@
+
+\subsection*{Ingresar llaves para Oanda Trading}
+
+<<Trading2, eval=FALSE, echo=TRUE, include=TRUE, results.hide='TRUE'>>=
+consumer_key    <- '4TJeb1mqGw22VmxWd8w7gf3Tk'
+consumer_secret <- 'uvwY6vtdfxzbsbUOS14sHQMfZgKX0cRyAi7041XbdEkZWVKXhc'
+access_token    <- '3288299311-sk9rkLFG0bXoeZbVbV4mJN7lmLCuUqweMhkO7BV'
+access_token_secret <-  'FhGj0ab2j7b7UN5LLjgeZ3ZBeTyCrkt0T6dGe6IeYAoVj'
+username <- '@iffranciscome'
+@
+
+\subsection*{Inicializar API de Twitter}
+
+<<Trading3, eval=FALSE, echo=TRUE, include=TRUE, results.hide='TRUE'>>=
+setup_twitter_oauth(consumer_key,consumer_secret,access_token,access_token_secret)
+@
+
+\subsection*{Par\'ametros de trading}
+
+<<Trading4, eval=FALSE, echo=TRUE, include=TRUE, results.hide='TRUE'>>=
+AccountID   <- 1438853    # ID de cuenta (Ver Manual ROandaAPI)
+TimeAlign   <- "America%2FMexico_City" # Uso horario
+Token       <- "c567fab3522f33fda6a91dbfee0522f6-cdbba372874e6e69e4694f050f890273"
+
+Ini <- Sys.Date()-300
+Fin <- Sys.Date()+1
+
+PipValue    <- 1          # Centavo por lote por 1usd.
+DayAlign    <- 14         # Hora para considerar el cierre diario
+AccountType <- "practice" # Tipo de cuenta.
+Granularity <- "D"      # Frecuencia de muestre de precio.
+TInstrument <- "USD_MXN"  # Instrumento Financiero a utilizar.
+ResagosMax  <- 29         # Resagos maximos a calcular.
+InitialBalance <- 20000   # Balance Inicial.
+Comision    <- 1          # En Usd por cada op.
+@
+
+\pagebreak
+\subsection*{Solicitar Precios.}
+
+<<Trading5, eval=FALSE, echo=TRUE, include=TRUE, results.hide='TRUE'>>=
+ListaInst   <- data.frame(InstrumentsList(AccountType,Token,AccountID))[,c(1,3)]
+PreciosHist <- HisPrices(AccountType,Granularity,DayAlign,TimeAlign,Token,TInstrument,Ini,Fin)
+PrecioCl    <- data.frame(PreciosHist$TimeStamp, round(PreciosHist$Close,4))
+colnames(PrecioCl) <- c("TimeStamp","PrecioCl")
+PrecioAct   <- ActualPrice(AccountType,Token,TInstrument)
+@
+
+\subsection*{Generar Resagos.}
+
+<<Trading6, eval=FALSE, echo=TRUE, include=TRUE, results.hide='TRUE'>>=
+ResagosCl  <- data.frame(cbind(PrecioCl[,1:2],Lag(x=PrecioCl$PrecioCl,k=1:ResagosMax)))
+ResagosCl  <- ResagosCl[complete.cases(ResagosCl),]
+ResagosCl$TimeStamp <- ResagosCl$TimeStamp
+
+NC  <- .95
+Reg <- c()
+@
+
+\subsection*{Ajustar modelo.}
+
+<<Trading7, eval=FALSE, echo=TRUE, include=TRUE, results.hide='TRUE'>>=
+
+@
+
+\vspace{.35cm}
+\hfill Regresar a: \textcolor{blue}{\autoref{sec:ChapAT} \nameref{sec:ChapAT}}
+\pagebreak
+
+% -- --------------------------------------------------------------------------------- --
+\section{Desarrollo Te\'orico de modelo} \label{sec:SecAT3}
+% -- --------------------------------------------------------------------------------- --
+
+\vspace{.35cm}
+\hfill Regresar a: \textcolor{blue}{\autoref{sec:ChapAT} \nameref{sec:ChapAT}}
+\pagebreak
+
+% -- --------------------------------------------------------------------------------- --
+\section{Desempe\~no de modelo} \label{sec:SecAT4}
+% -- --------------------------------------------------------------------------------- --
+
+\vspace{.35cm}
+\hfill Regresar a: \textcolor{blue}{\autoref{sec:ChapAT} \nameref{sec:ChapAT}}
+\pagebreak
+
+
+% -- --------------------------------------------------------------------------------- --
+% -- --------------------------------------------------------------------------------- --
+\chapter{Anexos y Bibliograf\'ia}
+% -- --------------------------------------------------------------------------------- --
+% -- --------------------------------------------------------------------------------- --
+
+En este cap\'itulo... \\\\
+
+\hyperref[sec:SecAT1]{\autoref{sec:SecAT1}}~\textbf{\nameref{sec:SecAT1}} \\
+\hyperref[sec:SecAT2]{\autoref{sec:SecAT2}}~\textbf{\nameref{sec:SecAT2}}
+
+\pagebreak
+
+% -- --------------------------------------------------------------------------------- --
+\section{Anexos} \label{sec:SecAB1}\label{sec:ChapAB}
+% -- --------------------------------------------------------------------------------- --
+
+\subsection{API oficial de twitter para conectividad directa.}
+
+\begin{itemize}
+  
+  \item \href{https://dev.twitter.com/}{Pagina Oficial Desarrolladores}
+  \item \href{https://dev.twitter.com/overview/documentation}{Documentacion general}
+  \item \href{https://dev.twitter.com/rest/public}{Documentacion REST APIs}
+  \item \href{https://dev.twitter.com/rest/tools/console}{Consola oficial para pruebas}
+
+\end{itemize}
+
+
+\subsection{Traducci\'on de Japon\'es a Ingl\'es.}
+
+<<Trad, eval = FALSE, echo = TRUE, include = TRUE, results='hide', size="footnotesize">>=
+coupon_list_train = read.csv("coupon_list_train.csv", as.is=T)
+trans = data.frame(jp=unique(c(coupon_list_train$GENRE_NAME, coupon_list_train$CAPSULE_TEXT,
+coupon_list_train$large_area_name, coupon_list_train$ken_name,
+coupon_list_train$small_area_name)), en=c("Food","Hair salon","Spa","Relaxation",
+"Beauty","Nail and eye salon","Delivery service","Lesson","Gift card","Other coupon",
+"Leisure","Hotel and Japanese hotel","Health and medical","Other","Hotel",
+"Japanese hotel","Vacation rental","Lodge","Resort inn","Guest house",
+"Japanse guest house","Public hotel","Beauty","Event","Web service","Class",
+"Correspondence course","Kanto","Kansai","East Sea","Hokkaido","Kyushu-Okinawa",
+"Northeast","Shikoku","Chugoku","Hokushinetsu","Saitama Prefecture","Chiba Prefecture",
+"Tokyo","Kyoto","Aichi Prefecture","Kanagawa Prefecture","Fukuoka Prefecture",
+"Tochigi Prefecture","Osaka prefecture","Miyagi Prefecture","Fukushima Prefecture",
+"Oita Prefecture","Kochi Prefecture","Hiroshima Prefecture","Niigata Prefecture",
+"Okayama Prefecture","Ehime Prefecture","Kagawa Prefecture","Tokushima Prefecture",
+"Hyogo Prefecture","Gifu Prefecture","Miyazaki Prefecture","Nagasaki Prefecture",
+"Ishikawa Prefecture","Yamagata Prefecture","Shizuoka Prefecture","Aomori Prefecture",
+"Okinawa","Akita","Nagano Prefecture","Iwate Prefecture","Kumamoto Prefecture",
+"Yamaguchi Prefecture","Saga Prefecture","Nara Prefecture","Mie","Gunma Prefecture",
+"Wakayama Prefecture","Yamanashi Prefecture","Tottori Prefecture","Kagoshima prefecture",
+"Fukui Prefecture","Shiga Prefecture","Toyama Prefecture","Shimane Prefecture",
+"Ibaraki Prefecture","Saitama","Chiba","Shinjuku, Takadanobaba Nakano - Kichijoji",
+"Kyoto","Ebisu, Meguro Shinagawa","Ginza Shinbashi, Tokyo, Ueno","Aichi",
+"Kawasaki, Shonan-Hakone other","Fukuoka","Tochigi","Minami other",
+"Shibuya, Aoyama, Jiyugaoka","Ikebukuro Kagurazaka-Akabane",
+"Akasaka, Roppongi, Azabu","Yokohama","Miyagi","Fukushima","Much","Kochi",
+"Tachikawa Machida, Hachioji other","Hiroshima","Niigata","Okayama","Ehime","Kagawa",
+"Northern","Tokushima","Hyogo","Gifu","Miyazaki","Nagasaki","Ishikawa","Yamagata",
+"Shizuoka","Aomori","Okinawa","Akita","Nagano","Iwate","Kumamoto","Yamaguchi","Saga",
+"Nara","Triple","Gunma","Wakayama","Yamanashi","Tottori","Kagoshima","Fukui","Shiga",
+"Toyama","Shimane","Ibaraki"), stringsAsFactors = F)
+
+coupon_list_train = read.csv("coupon_list_train.csv", as.is=T)
+names(trans)=c("jp","en_capsule")
+coupon_list_train=merge(coupon_list_train,trans,by.x="CAPSULE_TEXT",by.y="jp",all.x=T)
+names(trans)=c("jp","en_genre"); coupon_list_train=merge(coupon_list_train,
+trans,by.x="GENRE_NAME",by.y="jp",all.x=T)
+names(trans)=c("jp","en_small_area"); coupon_list_train=merge(coupon_list_train,
+trans,by.x="small_area_name",by.y="jp",all.x=T)
+names(trans)=c("jp","en_ken"); coupon_list_train=merge(coupon_list_train,trans,
+by.x="ken_name",by.y="jp",all.x=T)
+names(trans)=c("jp","en_large_area"); coupon_list_train=merge(coupon_list_train,trans,
+by.x="large_area_name",by.y="jp",all.x=T)
+write.csv(coupon_list_train, "coupon_list_train_en.csv", row.names = F)
+
+coupon_area_train = read.csv("coupon_area_train.csv", as.is=T)
+names(trans)=c("jp","en_small_area"); coupon_area_train=merge(coupon_area_train,trans,
+by.x="SMALL_AREA_NAME",by.y="jp",all.x=T)
+names(trans)=c("jp","en_pref"); coupon_area_train=merge(coupon_area_train,trans,
+by.x="PREF_NAME",by.y="jp",all.x=T)
+write.csv(coupon_area_train, "coupon_area_train_en.csv", row.names = F)
+@
+
+\vspace{.35cm}
+\hfill Regresar a: \textcolor{blue}{\autoref{sec:ChapAB} \nameref{sec:ChapAB}}
+\pagebreak
+
+% -- --------------------------------------------------------------------------------- --
+\section{Bibliograf\'ia} \label{sec:SecAB2}
+% -- --------------------------------------------------------------------------------- --
+
+\begin{itemize}
+
+\item \textit{An Introduction to Statistical Learning with Applications in R} (Hastie,Tibshirani,Witten,James), 2013.
+
+\end{itemize}
+
+\vspace{.35cm}
+\hfill Regresar a: \textcolor{blue}{\autoref{sec:ChapAB} \nameref{sec:ChapAB}}
+
+
+\end{document}
